@@ -15,8 +15,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.itemlista.view.*
 import org.jetbrains.anko.doAsync
 
-class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : Context) : RecyclerView.Adapter<ItemFeedAdapter.ViewHolder>() {
-
+class ItemFeedAdapter (private val ctx : Context) : RecyclerView.Adapter<ItemFeedAdapter.ViewHolder>() {
+    var itemFeeds = listOf<ItemFeed>()
     override fun getItemCount(): Int = itemFeeds.size
     var playerService: MusicPlayerService? = null
 

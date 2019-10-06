@@ -13,10 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.net.URL
-import android.os.Environment
 import android.os.IBinder
-import org.jetbrains.anko.ctx
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,8 +38,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        itemFeedAdapter = ItemFeedAdapter(applicationContext)
         list.layoutManager = LinearLayoutManager(this)
-        list.adapter = ItemFeedAdapter(listOf(), this)
+        list.adapter = itemFeedAdapter
 
         val musicServiceIntent = Intent(this, MusicPlayerService::class.java)
         startService(musicServiceIntent)
@@ -73,7 +71,8 @@ class MainActivity : AppCompatActivity() {
                 Log.e("ERRO",e.message.toString())
             }
             uiThread {
-                list.adapter = ItemFeedAdapter(itemFeedList, applicationContext)
+                itemFeedAdapter.itemFeeds = itemFeedList
+                list.adapter = itemFeedAdapter
             }
         }
     }
@@ -86,7 +85,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        unbindService(sConn)
+        if(isBound){
+            unbindService(sConn)
+            isBound = false
+        }
+
         super.onStop()
     }
 
