@@ -1,25 +1,53 @@
 package br.ufpe.cin.android.podcast
 
+import android.Manifest
+import android.content.*
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.net.URL
-import androidx.recyclerview.widget.LinearLayoutManager
-import android.util.Log
-import kotlinx.android.synthetic.main.activity_main.*
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import android.os.Environment
+import android.os.IBinder
+import org.jetbrains.anko.ctx
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
+
+    internal var musicPlayerService: MusicPlayerService? = null
+    internal var isBound = false
+    private lateinit var itemFeedAdapter: ItemFeedAdapter
+
+    private val sConn = object : ServiceConnection {
+        override fun onServiceDisconnected(p0: ComponentName?) {
+            musicPlayerService = null
+            isBound = false
+        }
+
+        override fun onServiceConnected(p0: ComponentName?, b: IBinder?) {
+            val binder = b as MusicPlayerService.MusicBinder
+            musicPlayerService = binder.playerService
+            isBound = true
+            itemFeedAdapter.playerService = musicPlayerService
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         list.layoutManager = LinearLayoutManager(this)
         list.adapter = ItemFeedAdapter(listOf(), this)
+
+        val musicServiceIntent = Intent(this, MusicPlayerService::class.java)
+        startService(musicServiceIntent)
+
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
         ) {
@@ -49,4 +77,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    override fun onStart() {
+        super.onStart()
+        if (!isBound) {
+            val bindIntent = Intent(this, MusicPlayerService::class.java)
+            isBound = bindService(bindIntent, sConn, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onStop() {
+        unbindService(sConn)
+        super.onStop()
+    }
+
 }

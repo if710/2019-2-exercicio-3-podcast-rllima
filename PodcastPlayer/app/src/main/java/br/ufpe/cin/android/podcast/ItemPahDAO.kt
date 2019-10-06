@@ -13,4 +13,7 @@ interface ItemPathDao {
 
     @Query("SELECT * FROM items_path")
     fun findAllItemsPath() : Array<ItemPath>
+
+    @Query("SELECT * FROM items_path WHERE title LIKE :t")
+    fun search(t : String) : ItemPath
 }

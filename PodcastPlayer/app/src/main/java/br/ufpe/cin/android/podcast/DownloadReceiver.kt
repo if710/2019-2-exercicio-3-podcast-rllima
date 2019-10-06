@@ -7,19 +7,19 @@ import android.content.Intent
 import android.widget.Toast
 import org.jetbrains.anko.doAsync
 
-class DownloadReceiver(holder:ItemFeedAdapter.ViewHolder) : BroadcastReceiver() {
+class DownloadReceiver(holder: ItemFeedAdapter.ViewHolder) : BroadcastReceiver() {
     private val itemAction = holder.download
-    private val itemTitle = holder.title
+    private val itemTitle = holder.title?.text
 
     override fun onReceive(context: Context, intent: Intent) {
-        itemAction.isEnabled = true
-
+        itemAction.isEnabled = false
         val filePath = intent.getStringExtra("filePath")
         Toast.makeText(context,"Download completed: "+ filePath,Toast.LENGTH_LONG).show()
         val db = ItemPathDB.getDb(context)
 
         doAsync {
-            db.itemPathDao().insertItemPath(ItemPath(itemTitle.toString(), filePath!!))
+            val title = itemTitle.toString()
+            db.itemPathDao().insertItemPath(ItemPath(title, filePath!!))
         }
     }
 

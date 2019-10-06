@@ -13,10 +13,13 @@ import androidx.recyclerview.widget.RecyclerView
 import android.net.Uri
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.itemlista.view.*
+import org.jetbrains.anko.doAsync
 
 class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : Context) : RecyclerView.Adapter<ItemFeedAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int = itemFeeds.size
+    var playerService: MusicPlayerService? = null
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(ctx).inflate(R.layout.itemlista, parent, false)
@@ -24,7 +27,17 @@ class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : 
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.play.isEnabled = false
         val itemFeed = itemFeeds[position]
+        doAsync {
+            val db = ItemPathDB.getDb(ctx)
+            val item = db.itemPathDao().search(itemFeed.title)
+            if(!item.path.equals("")){
+                holder.path = item.path
+                holder.play.isEnabled = true
+
+            }
+        }
         holder.title?.text = itemFeed.title
         holder.date?.text = itemFeed.pubDate
         holder.download.setOnClickListener {
@@ -33,6 +46,10 @@ class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : 
             downloadService.data = Uri.parse(itemFeed.downloadLink)
             ctx.startService(downloadService)
             cfgReceiver(holder)
+
+        }
+        holder.play.setOnClickListener{
+            playerService!!.playPodcast(holder.path, itemFeed.title)
 
         }
 
@@ -44,6 +61,8 @@ class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : 
             intent.putExtra("link",itemFeed.link)
             ctx.startActivity(intent)
         }
+
+
     }
 
     private fun cfgReceiver(holder: ViewHolder){
@@ -57,6 +76,8 @@ class ItemFeedAdapter (private val itemFeeds: List<ItemFeed>, private val ctx : 
         val title = item.item_title
         val date = item.item_date
         val download = item.item_action
+        val play = item.item_play
+        var path = ""
 
 
     }
