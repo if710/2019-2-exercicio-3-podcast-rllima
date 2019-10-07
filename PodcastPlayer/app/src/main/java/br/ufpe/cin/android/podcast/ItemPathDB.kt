@@ -5,10 +5,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import br.ufpe.cin.android.podcast.ItemPathDao
-import br.ufpe.cin.android.podcast.ItemPath
 
-@Database(entities = arrayOf(ItemPath::class), version = 1)
+@Database(entities = arrayOf(ItemPath::class), version = 2,exportSchema = false)
 abstract class ItemPathDB : RoomDatabase() {
     abstract fun itemPathDao() : ItemPathDao
     companion object {
@@ -20,8 +18,9 @@ abstract class ItemPathDB : RoomDatabase() {
                     INSTANCE = Room.databaseBuilder(
                         ctx.applicationContext,
                         ItemPathDB::class.java,
-                        "items_path.db"
-                    ).build()
+                        "items_path.db")
+                        .fallbackToDestructiveMigration()
+                        .build()
                 }
             }
 

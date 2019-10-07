@@ -44,12 +44,13 @@ class ItemFeedAdapter (private val ctx : Context) : RecyclerView.Adapter<ItemFee
             holder.download.isEnabled = false
             val downloadService = Intent(ctx, DownloadService::class.java)
             downloadService.data = Uri.parse(itemFeed.downloadLink)
+            downloadService.putExtra("fileTitle",itemFeed.title)
             ctx.startService(downloadService)
             cfgReceiver(holder)
 
         }
         holder.play.setOnClickListener{
-            playerService!!.playPodcast(holder.path, itemFeed.title)
+            playerService!!.playPodcast(itemFeed.title,holder.path)
 
         }
 

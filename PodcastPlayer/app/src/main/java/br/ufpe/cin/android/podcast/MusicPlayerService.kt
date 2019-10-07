@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import java.io.FileInputStream
 import android.app.NotificationManager
 import android.content.Context
+import org.jetbrains.anko.doAsync
 
 
 class MusicPlayerService : Service() {
@@ -16,6 +17,7 @@ class MusicPlayerService : Service() {
     private var mPlayer: MediaPlayer? = null
     private val mBinder = MusicBinder()
     private val NOTIFICATION_ID = 2
+    private var currentEpisode: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -35,20 +37,56 @@ class MusicPlayerService : Service() {
         mPlayer?.release()
         super.onDestroy()
     }
+    private fun play(path:String, position: Int){
+        val fis = FileInputStream(path)
+        mPlayer?.reset()
+        mPlayer?.setDataSource(fis.fd)
+        mPlayer?.prepare()
+        mPlayer?.seekTo(position)
+        fis.close()
+        mPlayer?.start()
+    }
 
-    fun playPodcast(podcastPath: String, title: String) {
-        if (!mPlayer!!.isPlaying) {
+    fun playPodcast(title: String, path: String) {
+        if (currentEpisode != title) {
+            saveAndPlay(title, path)
+            currentEpisode = title
             updateNotification(title)
-            val fis = FileInputStream(podcastPath)
-            mPlayer?.reset()
-            mPlayer?.setDataSource(fis.fd)
-            mPlayer?.prepare()
-            fis.close()
-            mPlayer?.start()
         } else {
-            mPlayer?.pause()
+            if (!mPlayer!!.isPlaying) {
+                mPlayer?.start()
+            } else {
+                updatePosition(title, mPlayer!!.currentPosition)
+                mPlayer?.pause()
+            }
         }
     }
+
+    private fun saveAndPlay(title: String, podcastPath: String){
+        if (currentEpisode != null) {
+            updatePosition(title, mPlayer!!.currentPosition)
+            playFomPosition(title, podcastPath)
+        } else {
+            play(podcastPath, 0)
+        }
+
+    }private fun updatePosition(title: String, position: Int) {
+        var db = ItemPathDB.getDb(this)
+        doAsync {
+            val itemPath = db.itemPathDao().search(title)
+            itemPath.position = position
+            db.itemPathDao().insertItemPath(ItemPath(title,itemPath.path,position))
+        }
+    }
+
+    private fun playFomPosition(title: String, podcastPath: String) {
+        var db = ItemPathDB.getDb(this)
+        doAsync {
+            var episode = db.itemPathDao().search(title)
+            play(podcastPath, episode.position)
+        }
+    }
+
 
     fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

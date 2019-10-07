@@ -51,10 +51,11 @@ class DownloadService : IntentService("DownloadService") {
                 out.close()
                 c.disconnect()
             }
-
-            val actionItent = Intent(ACTION_DONWLOAD)
-            actionItent.putExtra("filePath",output.path)
-            LocalBroadcastManager.getInstance(this).sendBroadcast(actionItent)
+            val fileTitle = i.getStringExtra("fileTitle")
+            val actionIntent = Intent(ACTION_DONWLOAD)
+            actionIntent.putExtra("filePath",output.path)
+            actionIntent.putExtra("fileTitle",fileTitle)
+            LocalBroadcastManager.getInstance(this).sendBroadcast(actionIntent)
 
         }catch (e2:IOException){
             Log.e(javaClass.getName(), "Exception in download",e2)

@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 class ItemPath (
     @PrimaryKey
     var title: String,
-    var path: String
+    var path: String,
+    var position: Int
 ) {
     override fun toString(): String {
         return title

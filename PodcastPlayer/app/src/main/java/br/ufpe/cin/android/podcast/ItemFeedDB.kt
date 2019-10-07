@@ -4,10 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import br.ufpe.cin.android.podcast.ItemFeedDAO
-import br.ufpe.cin.android.podcast.ItemFeed
 
-    @Database(entities = arrayOf(ItemFeed::class), version = 1)
+
+    @Database(entities = arrayOf(ItemFeed::class), version = 2,exportSchema = false)
     abstract class ItemFeedDB : RoomDatabase() {
         abstract fun itemFeedDao() : ItemFeedDAO
         companion object {
@@ -19,8 +18,9 @@ import br.ufpe.cin.android.podcast.ItemFeed
                         INSTANCE = Room.databaseBuilder(
                             ctx.applicationContext,
                             ItemFeedDB::class.java,
-                            "itemFeed.db"
-                        ).build()
+                            "itemFeed.db")
+                            .fallbackToDestructiveMigration()
+                            .build()
                     }
                 }
 

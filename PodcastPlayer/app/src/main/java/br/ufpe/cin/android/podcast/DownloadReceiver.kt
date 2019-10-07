@@ -9,17 +9,19 @@ import org.jetbrains.anko.doAsync
 
 class DownloadReceiver(holder: ItemFeedAdapter.ViewHolder) : BroadcastReceiver() {
     private val itemAction = holder.download
-    private val itemTitle = holder.title?.text
+    private val playAction = holder.play
 
     override fun onReceive(context: Context, intent: Intent) {
         itemAction.isEnabled = false
+        playAction.isEnabled = true
+
         val filePath = intent.getStringExtra("filePath")
         Toast.makeText(context,"Download completed: "+ filePath,Toast.LENGTH_LONG).show()
         val db = ItemPathDB.getDb(context)
-
+        val title = intent.getStringExtra("fileTitle")
         doAsync {
-            val title = itemTitle.toString()
-            db.itemPathDao().insertItemPath(ItemPath(title, filePath!!))
+            db.itemPathDao().insertItemPath(ItemPath(title, filePath!!,0))
+
         }
     }
 
