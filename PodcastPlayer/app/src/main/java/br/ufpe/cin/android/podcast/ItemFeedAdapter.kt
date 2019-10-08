@@ -35,6 +35,7 @@ class ItemFeedAdapter (private val ctx : Context) : RecyclerView.Adapter<ItemFee
             if(!item.path.equals("")){
                 holder.path = item.path
                 holder.play.isEnabled = true
+                holder.download.isEnabled = false
 
             }
         }
@@ -50,7 +51,7 @@ class ItemFeedAdapter (private val ctx : Context) : RecyclerView.Adapter<ItemFee
 
         }
         holder.play.setOnClickListener{
-            playerService!!.playPodcast(itemFeed.title,holder.path)
+            playerService!!.playPodcast(itemFeed.title,holder)
 
         }
 
@@ -77,7 +78,7 @@ class ItemFeedAdapter (private val ctx : Context) : RecyclerView.Adapter<ItemFee
         val title = item.item_title
         val date = item.item_date
         val download = item.item_action
-        val play = item.item_play
+        val play = item.playAndPause
         var path = ""
 
 
