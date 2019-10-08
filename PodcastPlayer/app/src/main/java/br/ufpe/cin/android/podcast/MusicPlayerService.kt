@@ -12,6 +12,8 @@ import android.content.Context
 import org.jetbrains.anko.doAsync
 import android.content.IntentFilter
 import android.content.BroadcastReceiver
+import android.os.Environment
+import java.io.File
 import kotlinx.android.synthetic.main.itemlista.view.*
 
 
@@ -29,6 +31,25 @@ class MusicPlayerService : Service() {
 
         mPlayer = MediaPlayer()
         mPlayer?.isLooping = true
+        val root = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        root?.mkdir()
+        mPlayer?.setOnCompletionListener {
+            val db = ItemPathDB.getDb(this)
+            if (currentEpisode != null) {
+                doAsync {
+                    val podCast = db.itemPathDao().search(currentEpisode!!)
+                    podCast.position = 0
+                    podCast.path = ""
+
+                    val file = File(root, "${podCast.title}.mp3")
+                    if (file.exists()) {
+                        file.delete()
+                    }
+                    db.itemPathDao().insertItemPath(ItemPath(podCast.title,podCast.path,podCast.position))
+
+                }
+            }
+        }
         createChannel()
     }
 
